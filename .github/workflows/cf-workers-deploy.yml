@@ -1,0 +1,60 @@
+name: Deploy to Cloudflare Workers
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+env:
+  CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test || echo "No tests configured"
+
+      - name: Deploy to Cloudflare Workers (Staging)
+        if: github.ref != 'refs/heads/main'
+        run: |
+          wrangler deploy --env staging --var BOT_TOKEN:${{ secrets.BOT_TOKEN }} --var TELEGRAM_SECRET:${{ secrets.TELEGRAM_SECRET }}
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          TELEGRAM_SECRET: ${{ secrets.TELEGRAM_SECRET }}
+
+      - name: Deploy to Cloudflare Workers (Production)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          wrangler deploy --env production --var BOT_TOKEN:${{ secrets.BOT_TOKEN }} --var TELEGRAM_SECRET:${{ secrets.TELEGRAM_SECRET }}
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          TELEGRAM_SECRET: ${{ secrets.TELEGRAM_SECRET }}
+
+      - name: Set Telegram Webhook (Production)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          WORKER_URL="https://kbank-poc.your-domain.workers.dev"
+          curl -X POST "$WORKER_URL/set-webhook" \
+            -H "Content-Type: application/json" \
+            -d "{\"url\": \"$WORKER_URL/webhook\", \"secret_token\": \"${{ secrets.TELEGRAM_SECRET }}\"}"

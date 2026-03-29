@@ -15,6 +15,12 @@ async function initializeServices() {
   try {
     logger.info('Starting K-Bank PoC services...');
 
+    // Initialize and start Telegram bot
+    const botStarted = await bot.initialize();
+    if (botStarted) {
+      logger.info('Telegram bot launched');
+    }
+
     // Start insurance bridge server
     await insuranceBridge.start();
     logger.info('Insurance bridge started');
@@ -56,7 +62,7 @@ async function initializeServices() {
 
     // Startup complete
     logger.info('✅ K-Bank PoC started successfully');
-    logger.info(`Telegram bot: ${bot ? 'active' : 'inactive'}`);
+    logger.info(`Telegram bot: ${bot.bot ? 'active' : 'inactive'}`);
     logger.info(`Insurance bridge: ${insuranceBridge.server ? 'active' : 'inactive'}`);
     logger.info(`Health check: http://localhost:${healthPort}/health`);
 

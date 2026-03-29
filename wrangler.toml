@@ -1,0 +1,29 @@
+name = "kbank-poc"
+main = "src/worker.js"
+compatibility_date = "2024-01-01"
+
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+[[kv_namespaces]]
+binding = "RECEIPTS"
+id = "your-receipts-kv-id"
+[[kv_namespaces]]
+binding = "WALLETS"
+id = "your-wallets-kv-id"
+
+[[durable_objects.bindings]]
+name = "BOT_STATE"
+class_name = "BotState"
+
+[[routes]]
+pattern = ""
+zone_name = "your-domain.com"
+
+[build]
+command = "npm run build"
+cwd = "."
+watch_dir = "src"
+
+[vars]
+TELEGRAM_SECRET = ""

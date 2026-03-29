@@ -11,7 +11,7 @@ class InsuranceService {
     this.apiKey = process.env.INSURANCE_API_KEY;
     this.contractAddress = process.env.INSURANCE_CONTRACT_ADDRESS || '0xInsuranceContract';
     this.coverageAmount = parseFloat(process.env.INSURANCE_COVERAGE_AMOUNT) || 1000000;
-    this.premiumRate = parseFloat(process.env.INSURANCE_PREMIUM_RATE) || 0.001; // 0.1%
+    this.premiumRate = parseFloat(process.env.INSURANCE_PREMIUM_RATE) || 0.001;
     this.retryConfig = {
       maxRetries: 3,
       retryDelay: 1000
@@ -30,7 +30,7 @@ class InsuranceService {
     }
   }
 
-  async createPolicy(userAddress: string, coverageAmount: number, premium: number) {
+  async createPolicy(userAddress, coverageAmount, premium) {
     return this.retryWithBackoff(async () => {
       const response = await axios.post(
         `${this.baseUrl}/policies`,
@@ -40,7 +40,7 @@ class InsuranceService {
           coverageAmount,
           premium,
           currency: 'USD',
-          period: 365, // 1 year
+          period: 365,
           product: 'kbank-deposit-protection'
         },
         {
@@ -120,7 +120,6 @@ class InsuranceService {
       );
 
       const policy = response.data;
-      // Check if policy is active
       const now = new Date();
       const expiration = new Date(policy.expiresAt);
       const isActive = now < expiration && policy.status === 'ACTIVE';
@@ -135,7 +134,6 @@ class InsuranceService {
 
   async processClaimDecision(claimId, decision, reason = null) {
     try {
-      // Update cache with claim decision
       const receipt = receiptTracker.getReceipt(claimId);
       if (receipt) {
         receiptTracker.captureReceipt(claimId, {
@@ -154,15 +152,13 @@ class InsuranceService {
     }
   }
 
-  async calculatePremium(coverageAmount: number, userRiskScore: number = 1.0): Promise<number> {
-    // Risk-based pricing (lower risk score = lower premium)
+  async calculatePremium(coverageAmount, userRiskScore = 1.0) {
     const baseRate = this.premiumRate;
     const adjustedRate = baseRate * userRiskScore;
     return coverageAmount * adjustedRate;
   }
 
-  async createAutomaticPolicy(userAddress: string, depositAmount: number) {
-    // Automatically create policy for users with deposits > threshold
+  async createAutomaticPolicy(userAddress, depositAmount) {
     if (depositAmount < 1000) {
       return null;
     }
@@ -180,32 +176,20 @@ class InsuranceService {
     }
   }
 
-  getRiskScore(userAddress: string, transactionHistory: any[]): number {
-    // Simple risk assessment
+  getRiskScore(userAddress, transactionHistory = []) {
     let riskScore = 1.0;
 
-    // Based on transaction counts
     const txCount = transactionHistory.length;
-    if (txCount < 5) riskScore += 0.3; // New user
-    if (txCount > 100) riskScore += 0.1; // Active user
-
-    // More sophisticated scoring would go here
-    // Including: age of account, withdrawal patterns, gas usage patterns, etc.
+    if (txCount < 5) riskScore += 0.3;
+    if (txCount > 100) riskScore += 0.1;
 
     return riskScore;
   }
 
-  async validateClaim(claimId: string, evidence: any[]): Promise<boolean> {
-    // Validate claim evidence
+  async validateClaim(claimId, evidence = []) {
     if (!evidence || evidence.length === 0) {
       throw new Error('No evidence provided');
     }
-
-    // Simple validation - in production would include:
-    // - Transaction proofs
-    // - Multisig verification
-    // - External audit data
-    // - Time-based validation
 
     const isValid = evidence.every(item =>
       item.verified !== false && item.timestamp > (Date.now() - 7 * 24 * 60 * 60 * 1000)

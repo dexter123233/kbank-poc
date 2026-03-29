@@ -10,6 +10,23 @@ Consumer DeFi funding platform built on Flow blockchain with DAO governance and 
 - **Telegram Bot**: User-friendly interface via Telegram
 - **Transaction Transparency**: Full audit trail with receipt tracking
 - **Production-Ready**: Error handling, rate limiting, and security best practices
+- **Serverless**: Deploy on Cloudflare Workers for 100K free requests/day
+
+## Deployment Options
+
+### Option 1: Cloudflare Workers (Recommended - Free)
+
+See [make.md](make.md) for detailed instructions.
+
+```bash
+npm install
+wrangler login
+npm run deploy
+```
+
+### Option 2: Docker/Node.js
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
 
 ## Prerequisites
 
@@ -18,6 +35,7 @@ Consumer DeFi funding platform built on Flow blockchain with DAO governance and 
 - Flow CLI (for contract deployment)
 - Telegram Bot Token (from @BotFather)
 - Flow Wallet Connect credentials
+- Cloudflare account (for Workers deployment)
 
 ## Quick Start
 

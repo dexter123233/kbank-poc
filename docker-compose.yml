@@ -1,87 +1,84 @@
 version: '3.8'
 
 services:
-  kbank-bot:
+  kbank-app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: kbank-bot
+    image: kbank-poc:latest
+    container_name: kbank-app
     restart: unless-stopped
     ports:
-      - "3000:3000"   # Main application port
-      - "3001:3001"   # Insurance bridge health check
+      - "3000:3000"   # Main Telegram bot
+      - "3001:3001"   # Insurance bridge API
+      - "3002:3002"   # Health check
     environment:
       - NODE_ENV=production
       - BOT_TOKEN=${BOT_TOKEN}
       - FLOW_NETWORK=${FLOW_NETWORK:-testnet}
-      - WALLET_CONNECT_CLIENT_ID=${WALLET_CONNECT_CLIENT_ID}
-      - WALLET_CONNECT_CLIENT_SECRET=${WALLET_CONNECT_CLIENT_SECRET}
-      - INSURANCE_API_URL=${INSURANCE_API_URL}
-      - INSURANCE_API_KEY=${INSURANCE_API_KEY}
+      - WALLET_CONNECT_CLIENT_ID=${WALLET_CONNECT_CLIENT_ID:-test-client}
+      - WALLET_CONNECT_CLIENT_SECRET=${WALLET_CONNECT_CLIENT_SECRET:-test-secret}
+      - INSURANCE_API_URL=${INSURANCE_API_URL:-https://api.nexusmutual.io}
+      - INSURANCE_API_KEY=${INSURANCE_API_KEY:-test-key}
       - INSURANCE_CONTRACT_ADDRESS=${INSURANCE_CONTRACT_ADDRESS:-0xInsuranceContract}
       - INSURANCE_COVERAGE_AMOUNT=${INSURANCE_COVERAGE_AMOUNT:-1000000}
       - INSURANCE_PREMIUM_RATE=${INSURANCE_PREMIUM_RATE:-0.001}
       - PORT=3000
       - INSURANCE_PORT=3001
+      - HEALTH_PORT=3002
       - RECEIPT_PERSISTENCE_PATH=/app/data/receipts.json
       - RECEIPT_SAVE_INTERVAL=${RECEIPT_SAVE_INTERVAL:-300000}
-      - RATE_LIMIT_MAX_REQUESTS=${RATE_LIMIT_MAX_REQUESTS:-10}
+      - RATE_LIMIT_MAX_REQUESTS=${RATE_LIMIT_MAX_REQUESTS:-100}
       - RATE_LIMIT_WINDOW_MS=${RATE_LIMIT_WINDOW_MS:-60000}
       - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_DIR=/app/logs
+      - MAX_CONCURRENT_TX=${MAX_CONCURRENT_TX:-10}
     volumes:
-      - receipt_data:/app/data
-      - ./logs:/app/logs
+      - kbank_data:/app/data
+      - kbank_logs:/app/logs
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 60s
     networks:
       - kbank-network
     deploy:
       resources:
         limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
           memory: 512M
           cpus: '0.5'
-        reservations:
-          memory: 256M
-          cpus: '0.25'
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
 
-  # Optional: PostgreSQL for persistent storage (production)
-  # postgres:
-  #   image: postgres:15
-  #   container_name: kbank-postgres
-  #   restart: unless-stopped
-  #   environment:
-  #     POSTGRES_DB: kbank
-  #     POSTGRES_USER: kbank
-  #     POSTGRES_PASSWORD: ${DB_PASSWORD}
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data
-  #   networks:
-  #     - kbank-network
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U kbank"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-
-  # Optional: Redis for rate limiting and caching
-  # redis:
-  #   image: redis:7-alpine
-  #   container_name: kbank-redis
-  #   restart: unless-stopped
-  #   command: redis-server --appendonly yes
-  #   volumes:
-  #     - redis_data:/data
-  #   networks:
-  #     - kbank-network
-  #   healthcheck:
-  #     test: ["CMD", "redis-cli", "ping"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
+  redis:
+    image: redis:7-alpine
+    container_name: kbank-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - kbank-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+          cpus: '0.5'
 
 networks:
   kbank-network:
@@ -91,9 +88,9 @@ networks:
         - subnet: 172.20.0.0/16
 
 volumes:
-  receipt_data:
+  kbank_data:
     driver: local
-  # postgres_data:
-  #   driver: local
-  # redis_data:
-  #   driver: local
+  kbank_logs:
+    driver: local
+  redis_data:
+    driver: local
