@@ -7,15 +7,10 @@ vars = { ENVIRONMENT = "production" }
 
 [[kv_namespaces]]
 binding = "RECEIPTS"
-id = "your-receipts-kv-id"
+id = "c3e35cc18bdc4c75bfafbfca1796c71f"
 [[kv_namespaces]]
 binding = "WALLETS"
-id = "your-wallets-kv-id"
-
-[build]
-command = "npm run build"
-cwd = "."
-watch_dir = "src"
+id = "f21218d1bc3a46bc8ffcc58d752b5ebf"
 
 [vars]
 TELEGRAM_SECRET = ""

@@ -1,6 +1,6 @@
-const { createLogger } = require('./errorHandler');
-const flowClient = require('./flowClient');
-const { getReceipt, saveReceipt, getAllReceipts, getWallet, setWallet } = require('./kv');
+import { createLogger } from './errorHandler.js';
+import flowClient from './flowClient.js';
+import { getReceipt, saveReceipt, getAllReceipts, getWallet, setWallet } from './kv.js';
 
 const logger = createLogger('telegram');
 
@@ -26,7 +26,7 @@ function checkRateLimit(userId) {
   return { allowed: true };
 }
 
-async function handleTelegramUpdate(update, env) {
+export async function handleTelegramUpdate(update, env) {
   if (!update.message && !update.callback_query) return;
 
   const message = update.message || update.callback_query?.message;
@@ -439,8 +439,6 @@ async function sendMessage(env, chatId, text, options = {}) {
   }
 }
 
-function setBotToken(token) {
+export function setBotToken(token) {
   console.log('Bot token configured');
 }
-
-module.exports = { handleTelegramUpdate, setBotToken };

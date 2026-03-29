@@ -12,6 +12,7 @@ await esbuild.build({
   sourcemap: true,
   outfile: 'dist/worker.js',
   format: 'esm',
+  platform: 'browser',
   target: 'es2022',
   external: [],
   define: {

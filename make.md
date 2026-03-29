@@ -1,5 +1,17 @@
 # K-Bank PoC Deployment Guide
 
+## Live Deployment
+
+**Worker URL:** https://kbank-poc.ravella-aravind93.workers.dev
+**Admin Panel:** https://kbank-poc.ravella-aravind93.workers.dev/admin.html
+
+### KV Namespace IDs
+
+- RECEIPTS: `c3e35cc18bdc4c75bfafbfca1796c71f`
+- WALLETS: `f21218d1bc3a46bc8ffcc58d752b5ebf`
+
+---
+
 ## Cloudflare Workers Deployment
 
 ### Prerequisites
@@ -18,18 +30,20 @@ npm install
 wrangler login
 
 # Create KV namespaces
-wrangler kv:namespace create RECEIPTS
-wrangler kv:namespace create WALLETS
+wrangler kv namespace create RECEIPTS
+wrangler kv namespace create WALLETS
 
 # Update wrangler.toml with KV IDs
 # Then deploy
 npm run deploy
+# or
+wrangler deploy
 ```
 
 ### Configuration
 
 1. **Environment Variables:**
-   - `BOT_TOKEN` - Telegram bot token
+   - `BOT_TOKEN` - Telegram bot token (set via Cloudflare Dashboard or wrangler secret)
    - `TELEGRAM_SECRET` - Secret for webhook verification
 
 2. **KV Namespaces:**
@@ -38,36 +52,85 @@ npm run deploy
 
 ### Setting Up Telegram Webhook
 
+**Option 1: Using the API**
+
 After deployment, set the webhook:
 
 ```bash
-curl -X POST "https://your-worker.workers.dev/set-webhook" \
+# Replace YOUR_BOT_TOKEN with your actual Telegram bot token
+curl -X POST "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook" \
   -H "Content-Type: application/json" \
   -d '{
-    "url": "https://your-worker.workers.dev/webhook",
+    "url": "https://kbank-poc.ravella-aravind93.workers.dev/webhook"
+  }'
+```
+
+Or use the built-in endpoint:
+
+```bash
+curl -X POST "https://kbank-poc.ravella-aravind93.workers.dev/set-webhook" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://kbank-poc.ravella-aravind93.workers.dev/webhook",
     "secret_token": "YOUR_SECRET"
   }'
 ```
 
-Configure in BotFather:
+**Option 2: Via BotFather**
+
 1. Open @BotFather
 2. Select your bot
 3. Go to Bot Settings > Menu Button > Configure
-4. Add your worker URL as the callback
+4. Add worker URL as callback: `https://kbank-poc.ravella-aravind93.workers.dev/webhook`
 
-### API Endpoints
+**Verify Webhook:**
+
+```bash
+curl "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getWebhookInfo"
+```
+
+### Set Bot Token
+
+```bash
+# Using wrangler
+wrangler secret put BOT_TOKEN
+# Enter your Telegram bot token when prompted
+```
+
+---
+
+## API Endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/health` | GET | Health check |
-| `/webhook` | POST | Telegram webhook |
+| `/webhook` | POST | Telegram webhook receiver |
+| `/set-webhook` | POST | Configure Telegram webhook |
+| `/receipts` | GET | List all transaction receipts |
+| `/api/admin/stats` | GET | Get bot statistics |
+| `/api/admin/verify` | POST | Verify admin token |
 | `/api/insurance/claims` | POST | Submit insurance claim |
 | `/api/insurance/claims/:id` | GET | Get claim status |
 | `/api/insurance/webhook/status` | POST | Insurance callback |
-| `/receipts` | GET | List all receipts |
-| `/set-webhook` | POST | Configure webhook |
 
-### Troubleshooting
+---
+
+## Admin Panel
+
+Access: https://kbank-poc.ravella-aravind93.workers.dev/admin.html
+
+Features:
+- Dashboard with stats (users, transactions, claims, proposals)
+- Bot controls (restart, status)
+- Broadcast messages to users
+- Transaction history
+- System info
+
+**Note:** Set `ADMIN_TOKEN` in Cloudflare dashboard for authentication.
+
+---
+
+## Troubleshooting
 
 **Bot not responding:**
 - Verify webhook is set: `https://api.telegram.org/bot<TOKEN>/getWebhookInfo`
@@ -81,11 +144,13 @@ Configure in BotFather:
 - Workers Free: 100,000 requests/day
 - CPU time: 10ms per request (50ms paid)
 
-### Local Development
+---
+
+## Local Development
 
 ```bash
 # Run locally
-npm run dev
+wrangler dev
 
 # Test webhook locally
 curl -X POST "http://localhost:8787/webhook" \
@@ -93,7 +158,9 @@ curl -X POST "http://localhost:8787/webhook" \
   -d '{"message": {"chat": {"id": 123}, "from": {"id": "123"}, "text": "/start"}}'
 ```
 
-### Architecture
+---
+
+## Architecture
 
 ```
 ┌─────────────────┐     Webhook      ┌──────────────────┐
@@ -110,7 +177,9 @@ curl -X POST "http://localhost:8787/webhook" \
               └─────────────┘       └─────────────┘        └─────────────┘
 ```
 
-### Cost Estimation
+---
+
+## Cost Estimation
 
 | Resource | Free Tier | Paid Tier |
 |----------|-----------|-----------|

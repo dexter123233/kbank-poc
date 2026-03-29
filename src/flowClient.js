@@ -1,6 +1,6 @@
-const { v4: uuidv4 } = require('uuid');
+const generateId = () => `id_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
-class FlowClient {
+export class FlowClient {
   constructor() {
     this.network = 'testnet';
   }
@@ -18,7 +18,7 @@ class FlowClient {
 
   async executeDeposit(payload) {
     const { userAddress, amount, token } = payload;
-    const txId = `tx_deposit_${uuidv4()}`;
+    const txId = `tx_deposit_${generateId()}`;
 
     return {
       txId,
@@ -34,7 +34,7 @@ class FlowClient {
 
   async executeWithdraw(payload) {
     const { userAddress, amount, token } = payload;
-    const txId = `tx_withdraw_${uuidv4()}`;
+    const txId = `tx_withdraw_${generateId()}`;
 
     return {
       txId,
@@ -50,7 +50,7 @@ class FlowClient {
 
   async executeStake(payload) {
     const { userAddress, amount, duration } = payload;
-    const txId = `tx_stake_${uuidv4()}`;
+    const txId = `tx_stake_${generateId()}`;
     const unlockDate = Date.now() + (duration * 24 * 60 * 60 * 1000);
 
     return {
@@ -68,11 +68,11 @@ class FlowClient {
 
   async createGovernanceProposal(payload) {
     const { creatorAddress, title, description, fundingAmount } = payload;
-    const proposalId = `proposal_${uuidv4()}`;
+    const proposalId = `proposal_${generateId()}`;
 
     return {
       proposalId,
-      txId: `tx_proposal_${uuidv4()}`,
+      txId: `tx_proposal_${generateId()}`,
       title,
       description,
       fundingAmount,
@@ -91,7 +91,7 @@ class FlowClient {
     const { proposalId, voterAddress, vote, weight } = payload;
 
     return {
-      txId: `tx_vote_${uuidv4()}`,
+      txId: `tx_vote_${generateId()}`,
       proposalId,
       voter: voterAddress,
       vote,
@@ -104,11 +104,11 @@ class FlowClient {
 
   async submitInsuranceClaim(payload) {
     const { policyId, claimAmount, claimantAddress } = payload;
-    const claimId = `claim_${uuidv4()}`;
+    const claimId = `claim_${generateId()}`;
 
     return {
       claimId,
-      txId: `tx_claim_${uuidv4()}`,
+      txId: `tx_claim_${generateId()}`,
       policyId,
       claimAmount,
       claimant: claimantAddress,
@@ -120,4 +120,4 @@ class FlowClient {
   }
 }
 
-module.exports = new FlowClient();
+export default new FlowClient();

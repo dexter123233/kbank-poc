@@ -1,13 +1,15 @@
 const RECEIPTS_KV = 'RECEIPTS';
 const WALLETS_KV = 'WALLETS';
 
+export async function initKV(env) {
+
 async function initKV(env) {
   if (!env.RECEIPTS || !env.WALLETS) {
     console.warn('KV namespaces not configured');
   }
 }
 
-async function getReceipt(env, id) {
+export async function getReceipt(env, id) {
   if (!env.RECEIPTS) return null;
   try {
     const data = await env.RECEIPTS.get(id);
@@ -18,7 +20,7 @@ async function getReceipt(env, id) {
   }
 }
 
-async function saveReceipt(env, receipt) {
+export async function saveReceipt(env, receipt) {
   if (!env.RECEIPTS) {
     console.warn('RECEIPTS KV not configured, skipping save');
     return;
@@ -32,7 +34,7 @@ async function saveReceipt(env, receipt) {
   }
 }
 
-async function getAllReceipts(env) {
+export async function getAllReceipts(env) {
   if (!env.RECEIPTS) return [];
   try {
     const list = await env.RECEIPTS.list();
@@ -52,7 +54,7 @@ async function getAllReceipts(env) {
   }
 }
 
-async function getWallet(env, userId) {
+export async function getWallet(env, userId) {
   if (!env.WALLETS) return null;
   try {
     const wallet = await env.WALLETS.get(userId);
@@ -63,7 +65,7 @@ async function getWallet(env, userId) {
   }
 }
 
-async function setWallet(env, userId, address) {
+export async function setWallet(env, userId, address) {
   if (!env.WALLETS) {
     console.warn('WALLETS KV not configured');
     return;
@@ -77,7 +79,7 @@ async function setWallet(env, userId, address) {
   }
 }
 
-async function deleteWallet(env, userId) {
+export async function deleteWallet(env, userId) {
   if (!env.WALLETS) return;
   try {
     await env.WALLETS.delete(userId);
@@ -85,13 +87,3 @@ async function deleteWallet(env, userId) {
     console.error('KV deleteWallet error:', err);
   }
 }
-
-module.exports = {
-  initKV,
-  getReceipt,
-  saveReceipt,
-  getAllReceipts,
-  getWallet,
-  setWallet,
-  deleteWallet
-};

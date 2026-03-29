@@ -1,4 +1,4 @@
-const createLogger = (category) => {
+export const createLogger = (category) => {
   const log = (level, message, meta = {}) => {
     const logEntry = {
       timestamp: new Date().toISOString(),
@@ -17,5 +17,3 @@ const createLogger = (category) => {
     debug: (message, meta) => log('debug', message, meta)
   };
 };
-
-module.exports = { createLogger };
