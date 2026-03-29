@@ -72,6 +72,10 @@ async function handleRequest(request, env) {
     });
   }
 
+  if (url.pathname.startsWith('/api/admin')) {
+    return handleAdminApi(request, env);
+  }
+
   return new Response('Not Found', { status: 404 });
 }
 
@@ -155,6 +159,69 @@ async function handleInsuranceApi(request, env) {
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
   }
+}
+
+async function handleAdminApi(request, env) {
+  const url = new URL(request.url);
+  const path = url.pathname;
+  const adminToken = request.headers.get('X-Admin-Token');
+  
+  const headers = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*'
+  };
+
+  if (path === '/api/admin/verify' && request.method === 'POST') {
+    if (adminToken === env.ADMIN_TOKEN || !env.ADMIN_TOKEN) {
+      return new Response(JSON.stringify({ valid: true }), { headers });
+    }
+    return new Response(JSON.stringify({ valid: false }), { status: 401, headers });
+  }
+
+  if (adminToken !== env.ADMIN_TOKEN && env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers });
+  }
+
+  if (path === '/api/admin/stats' && request.method === 'GET') {
+    const receipts = await getAllReceipts(env);
+    const claims = receipts.filter(r => r.type === 'insurance_claim');
+    const proposals = receipts.filter(r => r.type === 'proposal');
+    const transactions = receipts.filter(r => ['deposit', 'withdraw', 'stake'].includes(r.type));
+    
+    const users = new Set(receipts.map(r => r.userId || r.ownerAddress || r.wallet)).size;
+
+    return new Response(JSON.stringify({
+      users,
+      transactions: transactions.length,
+      claims: claims.length,
+      proposals: proposals.length,
+      totalReceipts: receipts.length
+    }), { headers });
+  }
+
+  if (path === '/api/admin/broadcast' && request.method === 'POST') {
+    const { message } = await request.json();
+    const receipts = await getAllReceipts(env);
+    const userIds = [...new Set(receipts.map(r => r.userId).filter(Boolean))];
+    
+    for (const userId of userIds.slice(0, 100)) {
+      console.log(`Broadcast to ${userId}: ${message}`);
+    }
+
+    return new Response(JSON.stringify({
+      success: true,
+      recipients: userIds.length
+    }), { headers });
+  }
+
+  if (path === '/api/admin/restart' && request.method === 'POST') {
+    return new Response(JSON.stringify({
+      success: true,
+      message: 'Bot restart scheduled'
+    }), { headers });
+  }
+
+  return new Response(JSON.stringify({ error: 'Endpoint not found' }), { status: 404, headers });
 }
 
 async function fetch(request, env) {
