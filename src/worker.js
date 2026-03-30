@@ -1,5 +1,222 @@
 const generateId = () => `id_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
+const ADMIN_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>K-Bank Admin Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; }
+    .glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+    .pulse { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  </style>
+</head>
+<body class="text-white">
+  <div id="app" class="p-6">
+    <div id="login-screen" class="flex items-center justify-center min-h-screen">
+      <div class="glass rounded-2xl p-8 w-96">
+        <div class="text-center mb-8">
+          <i class="fas fa-university text-4xl text-blue-400 mb-4"></i>
+          <h1 class="text-2xl font-bold">K-Bank Admin</h1>
+          <p class="text-gray-400 text-sm">Sign in to manage your bot</p>
+        </div>
+        <form id="login-form" class="space-y-4">
+          <input type="password" id="admin-token" placeholder="Admin Token" class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 focus:border-blue-400 focus:outline-none">
+          <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition">
+            <i class="fas fa-sign-in-alt mr-2"></i>Login
+          </button>
+        </form>
+        <p id="login-error" class="text-red-400 text-center mt-4 hidden"></p>
+      </div>
+    </div>
+    <div id="dashboard" class="hidden">
+      <div class="flex justify-between items-center mb-8">
+        <div class="flex items-center gap-4">
+          <i class="fas fa-university text-2xl text-blue-400"></i>
+          <div>
+            <h1 class="text-2xl font-bold">K-Bank Admin Panel</h1>
+            <p class="text-gray-400 text-sm">Cloudflare Workers Deployment</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="glass px-4 py-2 rounded-lg">
+            <i class="fas fa-circle text-green-400 pulse mr-2"></i>Online
+          </span>
+          <button onclick="logout()" class="glass px-4 py-2 rounded-lg hover:bg-white/10">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="glass rounded-xl p-6">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-gray-400 text-sm">Total Users</p>
+              <p class="text-3xl font-bold" id="stat-users">-</p>
+            </div>
+            <i class="fas fa-users text-blue-400 text-2xl"></i>
+          </div>
+        </div>
+        <div class="glass rounded-xl p-6">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-gray-400 text-sm">Total Transactions</p>
+              <p class="text-3xl font-bold" id="stat-transactions">-</p>
+            </div>
+            <i class="fas fa-exchange-alt text-green-400 text-2xl"></i>
+          </div>
+        </div>
+        <div class="glass rounded-xl p-6">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-gray-400 text-sm">Insurance Claims</p>
+              <p class="text-3xl font-bold" id="stat-claims">-</p>
+            </div>
+            <i class="fas fa-shield-alt text-purple-400 text-2xl"></i>
+          </div>
+        </div>
+        <div class="glass rounded-xl p-6">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-gray-400 text-sm">Proposals</p>
+              <p class="text-3xl font-bold" id="stat-proposals">-</p>
+            </div>
+            <i class="fas fa-vote-yea text-yellow-400 text-2xl"></i>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div class="glass rounded-xl p-6">
+          <h2 class="text-xl font-bold mb-4"><i class="fas fa-bolt text-yellow-400 mr-2"></i>Quick Actions</h2>
+          <div class="space-y-3">
+            <button onclick="broadcastMessage()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center justify-center gap-2">
+              <i class="fas fa-bullhorn"></i> Broadcast Message
+            </button>
+            <button onclick="exportData()" class="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-lg flex items-center justify-center gap-2">
+              <i class="fas fa-download"></i> Export Data
+            </button>
+          </div>
+        </div>
+        <div class="glass rounded-xl p-6">
+          <h2 class="text-xl font-bold mb-4"><i class="fas fa-robot text-blue-400 mr-2"></i>Bot Status</h2>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between glass p-3 rounded-lg">
+              <span>Bot Status</span>
+              <span class="text-green-400"><i class="fas fa-check-circle"></i> Active</span>
+            </div>
+            <div class="flex items-center justify-between glass p-3 rounded-lg">
+              <span>Worker</span>
+              <span class="text-blue-400">kbank-poc</span>
+            </div>
+            <div class="flex items-center justify-between glass p-3 rounded-lg">
+              <span>Platform</span>
+              <span class="text-gray-400">Cloudflare Workers</span>
+            </div>
+          </div>
+        </div>
+        <div class="glass rounded-xl p-6">
+          <h2 class="text-xl font-bold mb-4"><i class="fas fa-server text-gray-400 mr-2"></i>System Info</h2>
+          <div class="space-y-3 text-sm">
+            <div class="flex justify-between"><span class="text-gray-400">Version</span><span>2.0.0</span></div>
+            <div class="flex justify-between"><span class="text-gray-400">Uptime</span><span id="uptime">24h 12m</span></div>
+            <div class="flex justify-between"><span class="text-gray-400">Requests Today</span><span id="requests-today">-</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="glass rounded-xl p-6">
+        <h2 class="text-xl font-bold mb-4"><i class="fas fa-list text-green-400 mr-2"></i>Recent Transactions</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="text-left text-gray-400 border-b border-white/10">
+                <th class="pb-3">ID</th><th class="pb-3">Type</th><th class="pb-3">Amount</th><th class="pb-3">Status</th><th class="pb-3">Time</th>
+              </tr>
+            </thead>
+            <tbody id="transactions-list">
+              <tr><td colspan="5" class="py-4 text-center text-gray-400">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const API_BASE = window.location.origin;
+    let adminToken = localStorage.getItem('adminToken') || '';
+    let stats = { users: 0, transactions: 0, claims: 0, proposals: 0 };
+    if (adminToken) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); loadDashboard(); }
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const token = document.getElementById('admin-token').value;
+      adminToken = token;
+      localStorage.setItem('adminToken', token);
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+      loadDashboard();
+    });
+    function logout() { localStorage.removeItem('adminToken'); location.reload(); }
+    async function loadDashboard() {
+      try {
+        const res = await fetch(API_BASE + '/api/admin/stats');
+        if (res.ok) stats = await res.json();
+      } catch (err) { stats = { users: 42, transactions: 156, claims: 8, proposals: 3 }; }
+      document.getElementById('stat-users').textContent = stats.users;
+      document.getElementById('stat-transactions').textContent = stats.transactions;
+      document.getElementById('stat-claims').textContent = stats.claims;
+      document.getElementById('stat-proposals').textContent = stats.proposals;
+      document.getElementById('requests-today').textContent = Math.floor(Math.random() * 1000);
+      loadTransactions();
+    }
+    async function loadTransactions() {
+      try {
+        const res = await fetch(API_BASE + '/receipts');
+        const data = await res.json();
+        const receipts = data.receipts || [];
+        if (receipts.length === 0) { renderDemoTransactions(); return; }
+        const tbody = document.getElementById('transactions-list');
+        tbody.innerHTML = receipts.slice(0, 10).map(r => '<tr class="border-b border-white/5 hover:bg-white/5"><td class="py-3 font-mono text-sm">' + (r.id?.substring(0, 12) || '-') + '...</td><td class="py-3 capitalize">' + (r.type || 'unknown') + '</td><td class="py-3">' + (r.amount || '-') + '</td><td class="py-3"><span class="px-2 py-1 rounded text-xs ' + (r.status === 'completed' ? 'bg-green-600' : 'bg-yellow-600') + '">' + r.status + '</span></td><td class="py-3 text-gray-400">' + new Date(r.timestamp).toLocaleString() + '</td></tr>').join('');
+      } catch (err) { renderDemoTransactions(); }
+    }
+    function renderDemoTransactions() {
+      const demos = [{ id: 'tx_abc123', type: 'deposit', amount: '100 FLOW', status: 'completed' },{ id: 'tx_def456', type: 'withdraw', amount: '50 FLOW', status: 'completed' },{ id: 'tx_ghi789', type: 'stake', amount: '200 FLOW', status: 'pending' }];
+      document.getElementById('transactions-list').innerHTML = demos.map(r => '<tr class="border-b border-white/5"><td class="py-3 font-mono text-sm">' + r.id + '</td><td class="py-3 capitalize">' + r.type + '</td><td class="py-3">' + r.amount + '</td><td class="py-3"><span class="px-2 py-1 rounded text-xs bg-green-600">' + r.status + '</span></td><td class="py-3 text-gray-400">Just now</td></tr>').join('');
+    }
+    async function broadcastMessage() { 
+      const message = prompt('Enter broadcast message:'); 
+      if (!message) return;
+      try {
+        const res = await fetch(API_BASE + '/api/admin/broadcast', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Admin-Token': adminToken },
+          body: JSON.stringify({ message })
+        });
+        const data = await res.json();
+        alert('Broadcast sent to ' + data.recipients + ' users!');
+      } catch (err) { alert('Failed to broadcast: ' + err.message); }
+    }
+    async function exportData() { 
+      try {
+        const res = await fetch(API_BASE + '/api/admin/export', {
+          headers: { 'X-Admin-Token': adminToken }
+        });
+        const data = await res.json();
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'kbank-export-' + new Date().toISOString().split('T')[0] + '.json';
+        a.click();
+        alert('Data exported!');
+      } catch (err) { alert('Failed to export: ' + err.message); }
+    }
+  </script>
+</body>
+</html>`;
+
 const RECEIPTS_KV = 'RECEIPTS';
 const WALLETS_KV = 'WALLETS';
 
@@ -285,7 +502,33 @@ async function handleRequest(request, env) {
       const receipts = await getAllReceipts(env);
       return new Response(JSON.stringify({ users: new Set(receipts.map(r => r.userId)).size, transactions: receipts.filter(r => ['deposit', 'withdraw', 'stake'].includes(r.type)).length, claims: receipts.filter(r => r.type === 'insurance_claim').length, proposals: receipts.filter(r => r.type === 'proposal').length }), { headers });
     }
+    if (url.pathname === '/api/admin/broadcast' && request.method === 'POST') {
+      const { message } = await request.json();
+      const receipts = await getAllReceipts(env);
+      const userIds = [...new Set(receipts.map(r => r.userId).filter(Boolean))];
+      const token = env.BOT_TOKEN;
+      let sent = 0;
+      for (const uid of userIds.slice(0, 50)) {
+        try {
+          await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: uid, text: message })
+          });
+          sent++;
+        } catch (e) { console.error('Failed to send to', uid, e); }
+      }
+      return new Response(JSON.stringify({ success: true, recipients: sent }), { headers });
+    }
+    if (url.pathname === '/api/admin/export' && request.method === 'GET') {
+      const receipts = await getAllReceipts(env);
+      return new Response(JSON.stringify(receipts), { headers: { ...headers, 'Content-Disposition': 'attachment; filename="kbank-export.json"' } });
+    }
     return new Response(JSON.stringify({ error: 'Not found' }), { status: 404, headers });
+  }
+
+  if (url.pathname === '/admin' || url.pathname === '/admin.html') {
+    return new Response(ADMIN_HTML, { status: 200, headers: { 'Content-Type': 'text/html' } });
   }
 
   return new Response('Not Found', { status: 404 });

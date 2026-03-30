@@ -1,22 +1,139 @@
 # K-Bank PoC
 
-Consumer DeFi funding platform built on Flow blockchain with DAO governance and crypto insurance.
+Consumer DeFi funding platform built on Flow blockchain with DAO governance, crypto insurance, and subscription management for content creators.
 
-## Features
+## About
 
+K-Bank is a comprehensive DeFi platform that combines blockchain-based banking features with modern subscription management tools for social media creators. Built with Telegram Wallet-inspired UI, it offers a seamless experience for managing crypto assets while collecting payments from multiple platforms.
+
+### Key Features
+
+- **Telegram Wallet-Style UI**: Modern, dynamic interface inspired by Telegram Wallet with inline keyboard navigation
+- **Dynamic Theming**: Automatically updates based on Pantone's seasonal color recommendations (Spring Lavender, Summer Mosaic, Autumn Embers, Winter Frost, Modern Classic, Vibrant Pop)
+- **Subscription Collection**: Plug-and-play integration with multiple payment platforms for content creators
 - **Funding Mechanism**: Deposit, withdraw, and stake tokens with automated waypoints
 - **DAO Governance**: On-chain voting for project approvals
 - **Insurance Protection**: Integrated with crypto insurance providers
-- **Telegram Bot**: User-friendly interface via Telegram
 - **Transaction Transparency**: Full audit trail with receipt tracking
 - **Production-Ready**: Error handling, rate limiting, and security best practices
 - **Serverless**: Deploy on Cloudflare Workers for 100K free requests/day
 
+## Subscription Platforms Supported
+
+| Platform | Icon | Description |
+|----------|------|-------------|
+| Meta | 📘 | Facebook/Instagram subscriptions |
+| Google Play | 📱 | Android app subscriptions |
+| YouTube | ▶️ | Channel memberships |
+| Patreon | 🎨 | Creator memberships |
+| Stripe | 💳 | Custom subscriptions |
+| Gumroad | 🛒 | Digital product sales |
+| Payhip | 💰 | Online courses/products |
+| Lemon Squeezy | 🍋 | Software subscriptions |
+
+## Quick Start
+
+### 1. Connect a Wallet
+
+```bash
+/setwallet 0xYourFlowAddress
+```
+
+### 2. Connect Subscription Platforms
+
+```bash
+/connect stripe your_publishable_key your_secret_key product_id
+/connect patreon your_client_id your_client_secret your_creator_id
+```
+
+### 3. Check Revenue
+
+```bash
+/revenue
+```
+
+### 4. Change Theme
+
+```bash
+/theme vibrant
+/theme modern
+```
+
+## Telegram Bot Commands
+
+### Wallet Commands
+- `/start` - Open the wallet dashboard
+- `/balance` - Check your token balance
+- `/deposit <amount>` - Deposit funds
+- `/withdraw <amount>` - Withdraw funds
+- `/stake <amount> [days]` - Stake tokens
+- `/setwallet <address>` - Set your Flow wallet address
+
+### Subscription Commands
+- `/connect <platform>` - Connect a subscription platform
+- `/subscriptions` - View all connected platforms
+- `/revenue` - View revenue summary
+- `/disconnect <platform>` - Disconnect a platform
+- `/analytics` - View detailed analytics
+
+### Theme Commands
+- `/theme` - List available themes
+- `/theme <name>` - Change to a specific theme
+
+### Governance Commands
+- `/proposal create <title> | <description> | <amount>` - Create a proposal
+- `/proposal vote <id> <yes|no>` - Vote on a proposal
+
+### Insurance Commands
+- `/insurance claim <policy_id>` - Submit an insurance claim
+- `/insurance status <claim_id>` - Check claim status
+
+### Utility Commands
+- `/status` - View system status
+- `/receipts` - View recent transactions
+- `/receipt <id>` - View a specific receipt
+- `/help` - Show all commands
+
+## Dynamic Themes
+
+The bot automatically updates its theme based on the current season, following Pantone's color of the year recommendations:
+
+- **Spring**: Spring Lavender theme
+- **Summer**: Summer Mosaic theme  
+- **Fall**: Autumn Embers theme
+- **Winter**: Winter Frost theme
+
+You can also manually select from:
+- `modern` - Modern Classic
+- `vibrant` - Vibrant Pop
+- `spring` - Spring Lavender
+- `summer` - Summer Mosaic
+- `fall` - Autumn Embers
+- `winter` - Winter Frost
+
+## For Content Creators
+
+K-Bank provides a simple plug-and-play approach to collect subscriptions from multiple platforms:
+
+1. **Connect Platforms**: Use `/connect <platform>` to link your Meta, Google, Patreon, Stripe, or other accounts
+2. **Track Revenue**: Use `/revenue` to see earnings across all platforms
+3. **Convert to Crypto**: Deposit funds to your Flow wallet and stake for yields
+
+### Example: Connect Stripe
+
+```
+/connect stripe pk_live_xxx sk_live_xxx prod_xxx
+```
+
+### Example: Connect Patreon
+
+```
+/connect patreon your_client_id your_client_secret creator_id
+```
+
 ## Deployment Options
 
 ### Option 1: Cloudflare Workers (Recommended - Free)
-
-See [make.md](make.md) for detailed instructions.
 
 ```bash
 npm install
@@ -26,7 +143,11 @@ npm run deploy
 
 ### Option 2: Docker/Node.js
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
+```bash
+npm install
+npm run docker:build
+npm run docker:run
+```
 
 ## Prerequisites
 
@@ -37,52 +158,6 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
 - Flow Wallet Connect credentials
 - Cloudflare account (for Workers deployment)
 
-## Quick Start
-
-### 1. Clone and Install
-
-```bash
-git clone https://github.com/your-org/kbank-poc.git
-cd kbank-poc
-npm install
-```
-
-### 2. Configure Environment
-
-```bash
-cp .env.example .env
-# Edit .env with your credentials
-```
-
-Required environment variables:
-- `BOT_TOKEN`: Telegram bot token
-- `WALLET_CONNECT_CLIENT_ID`: Flow Wallet Connect client ID
-- `WALLET_CONNECT_CLIENT_SECRET`: Flow Wallet Connect secret
-- `FLOW_NETWORK`: Flow network (testnet/mainnet)
-- `INSURANCE_API_URL`: Insurance provider API endpoint
-- `INSURANCE_API_KEY`: Insurance provider API key
-
-### 3. Run with Docker (Recommended)
-
-```bash
-# Build and start
-npm run docker:build
-npm run docker:run
-
-# Or use docker-compose
-docker-compose up -d
-```
-
-### 4. Run Locally
-
-```bash
-# Development mode
-npm run dev
-
-# Production mode
-npm start
-```
-
 ## Project Structure
 
 ```
@@ -92,7 +167,7 @@ k-bank-poc/
 │       ├── Bank.cdc       # Main banking contract
 │       └── Governance.cdc # DAO governance contract
 ├── src/
-│   ├── bot.js            # Telegram bot interface
+│   ├── bot.js            # Telegram bot interface with Wallet UI
 │   ├── flowClient.js     # Flow SDK wrapper
 │   ├── errorHandler.js   # Centralized error handling
 │   ├── scheduler/        # Async transaction scheduling
@@ -106,18 +181,6 @@ k-bank-poc/
 └── README.md
 ```
 
-## Telegram Bot Commands
-
-- `/start` - Start the bot
-- `/help` - Show available commands
-- `/deposit <amount>` - Deposit funds
-- `/withdraw <amount>` - Withdraw funds
-- `/stake <amount>` - Stake tokens
-- `/check-balance` - Check your balance
-- `/proposal create <title> <description>` - Create governance proposal
-- `/proposal vote <id> <yes|no>` - Vote on proposal
-- `/claim-insurance <claimId>` - Submit insurance claim
-
 ## API Endpoints
 
 ### Insurance Bridge (Port 3001)
@@ -130,6 +193,11 @@ k-bank-poc/
 - `GET /api/insurance/premium/:amount/:riskScore?` - Calculate premium
 
 ## Production Features
+
+### Dynamic UI
+- Telegram Wallet-inspired inline keyboard navigation
+- Real-time theme updates based on seasonal Pantone colors
+- Rich Markdown formatting with emoji support
 
 ### Error Handling
 - Centralized error handling with Winston logger
@@ -145,155 +213,6 @@ k-bank-poc/
 - Persistent storage (JSON file)
 - Auto-save every 5 minutes
 - Receipt lookup and audit capabilities
-
-### DAO Governance
-- On-chain proposal creation and voting
-- Quorum and threshold enforcement
-- Transparent voting results
-
-### Insurance Integration
-- Nexus Mutual API integration pattern
-- Automatic policy creation for qualifying deposits
-- Claim submission and tracking
-- Webhook callbacks for claim decisions
-
-## Deployment
-
-### Docker Deployment
-
-```bash
-# Build image
-docker build -t kbank-poc:latest .
-
-# Run with environment
-docker run -d \
-  --name kbank-bot \
-  -p 3000:3000 \
-  -p 3001:3001 \
-  -e BOT_TOKEN="your-token" \
-  -e WALLET_CONNECT_CLIENT_ID="your-id" \
-  -e WALLET_CONNECT_CLIENT_SECRET="your-secret" \
-  -v $(pwd)/data:/app/data \
-  kbank-poc:latest
-```
-
-### Kubernetes Deployment
-
-```yaml
-# k8s deployment.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: kbank-bot
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: kbank-bot
-  template:
-    metadata:
-      labels:
-        app: kbank-bot
-    spec:
-      containers:
-      - name: bot
-        image: kbank-poc:latest
-        ports:
-        - containerPort: 3000
-        - containerPort: 3001
-        env:
-        - name: BOT_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: kbank-secrets
-              key: bot-token
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "250m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 3001
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 3001
-          initialDelaySeconds: 5
-          periodSeconds: 5
-```
-
-## Monitoring & Logging
-
-### Health Checks
-
-- Insurance Bridge: `GET http://localhost:3001/health`
-- Returns: `{ status: 'healthy', timestamp: '...', uptime: ... }`
-
-### Logs
-
-Logs are written to:
-- Console (JSON format)
-- `app.log` file
-
-Log levels: `error`, `warn`, `info`, `debug`
-
-### Metrics
-
-```bash
-# Check bot status
-curl http://localhost:3001/health
-
-# View logs
-docker logs kbank-bot
-tail -f app.log
-```
-
-## Security
-
-- Helmet.js for security headers
-- Rate limiting on all endpoints
-- Request size limits
-- Input validation on all endpoints
-- Environment variable secrets
-- No hardcoded credentials
-
-## Testing
-
-```bash
-# Unit tests
-npm test
-
-# Integration tests
-npm run test:integration
-
-# Load testing
-npm run test:load
-```
-
-## Development
-
-### Adding New Commands
-
-1. Add command handler in `src/bot.js`
-2. Add rate limit check
-3. Add error handling with try/catch
-4. Test with Telegram bot
-
-### Smart Contract Development
-
-1. Edit Cadence files in `contracts/k_bank/`
-2. Deploy with Flow CLI:
-   ```bash
-   flow accounts add --network testnet
-   flow contracts deploy ./contracts/k_bank/Bank.cdc
-   ```
-3. Test transactions with Flow emulator
 
 ## Contributing
 
@@ -311,3 +230,7 @@ MIT
 - Issues: https://github.com/your-org/kbank-poc/issues
 - Documentation: See `/docs` folder
 - Flow Docs: https://docs.onflow.org
+
+---
+
+Built with ❤️ for the creator economy
