@@ -110,8 +110,15 @@ const rateLimits = new Map();
 const subscriptions = new Map();
 const userWallets = new Map();
 const userStates = new Map();
+const userThemes = new Map();
 const RATE_LIMIT_WINDOW = 60000;
 const RATE_LIMIT_MAX = 10;
+
+const logger = {
+  info: (msg) => console.log(`[INFO] ${msg}`),
+  error: (msg) => console.error(`[ERROR] ${msg}`),
+  warn: (msg) => console.warn(`[WARN] ${msg}`)
+};
 
 function getCurrentTheme() {
   const month = new Date().getMonth();
