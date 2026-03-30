@@ -271,6 +271,7 @@ class FlowClient {
 const flowClient = new FlowClient();
 
 const rateLimits = new Map();
+const subscriptions = new Map();
 const RATE_LIMIT_WINDOW = 60000;
 const RATE_LIMIT_MAX = 10;
 
@@ -347,18 +348,11 @@ async function setWallet(env, userId, address) {
 }
 
 async function getSubscriptions(env, userId) {
-  if (!env.SUBSCRIPTIONS) return {};
-  try {
-    const data = await env.SUBSCRIPTIONS.get(userId);
-    return data ? JSON.parse(data) : {};
-  } catch (err) { return {}; }
+  return subscriptions.get(userId) || {};
 }
 
 async function setSubscriptions(env, userId, subs) {
-  if (!env.SUBSCRIPTIONS) return;
-  try {
-    await env.SUBSCRIPTIONS.put(userId, JSON.stringify(subs), { expirationTtl: 86400 * 365 });
-  } catch (err) { console.error('KV setSubscriptions error:', err); }
+  subscriptions.set(userId, subs);
 }
 
 async function sendMessage(env, chatId, text, options = {}) {
@@ -720,9 +714,9 @@ async function handleTelegramUpdate(update, env) {
 
     case '/status':
       const receipts = await getAllReceipts(env);
-      const userSubs = await getSubscriptions(env, userId);
+      const statusSubs = await getSubscriptions(env, userId);
       await sendMessage(env, message.chat.id, 
-        `📊 *Status*\n\nReceipts: ${receipts.length}\nConnected Platforms: ${Object.keys(userSubs).length}\nBot: Active\nTheme: ${theme.name}\nPlatform: Cloudflare Workers`,
+        `📊 *Status*\n\nReceipts: ${receipts.length}\nConnected Platforms: ${Object.keys(statusSubs).length}\nBot: Active\nTheme: ${theme.name}\nPlatform: Cloudflare Workers`,
         { parse_mode: 'Markdown' }
       );
       break;
