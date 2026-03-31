@@ -1,0 +1,163 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kbank
+  labels:
+    app: kbank-poc
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kbank-config
+  namespace: kbank
+data:
+  NETWORK: "testnet"
+  TESTNET_MODE: "true"
+  SANDBOX_ENABLED: "true"
+  FLOW_NETWORK: "testnet"
+  FLOW_RPC_URL: "https://access-testnet.onflow.org"
+  FLOW_REST_URL: "https://rest-testnet.onflow.org"
+  LOG_LEVEL: "info"
+  NODE_ENV: "production"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kbank-secrets
+  namespace: kbank
+type: Opaque
+stringData:
+  BOT_TOKEN: ""
+  WALLET_CONNECT_CLIENT_ID: ""
+  WALLET_CONNECT_CLIENT_SECRET: ""
+  INSURANCE_API_KEY: ""
+  TELEGRAM_SECRET: ""
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kbank-app
+  namespace: kbank
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: kbank-app
+  template:
+    metadata:
+      labels:
+        app: kbank-app
+    spec:
+      containers:
+      - name: kbank
+        image: kbank-poc:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+          name: bot
+        - containerPort: 3001
+          name: insurance
+        - containerPort: 3002
+          name: health
+        envFrom:
+        - configMapRef:
+            name: kbank-config
+        - secretRef:
+            name: kbank-secrets
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3002
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3002
+          initialDelaySeconds: 10
+          periodSeconds: 5
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kbank-service
+  namespace: kbank
+spec:
+  selector:
+    app: kbank-app
+  ports:
+  - name: bot
+    port: 3000
+    targetPort: 3000
+  - name: insurance
+    port: 3001
+    targetPort: 3001
+  - name: health
+    port: 3002
+    targetPort: 3002
+  type: ClusterIP
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kbank-ingress
+  namespace: kbank
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  tls:
+  - hosts:
+    - kbank.example.com
+    secretName: kbank-tls
+  rules:
+  - host: kbank.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: kbank-service
+            port:
+              number: 3000
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: kbank-hpa
+  namespace: kbank
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: kbank-app
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80

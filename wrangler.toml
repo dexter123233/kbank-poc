@@ -5,12 +5,37 @@ compatibility_date = "2024-01-01"
 [env.production]
 vars = { ENVIRONMENT = "production" }
 
+[env.testnet]
+vars = { 
+  ENVIRONMENT = "testnet"
+  NETWORK = "testnet"
+  TESTNET_MODE = "true"
+}
+
+[env.sandbox]
+vars = { 
+  ENVIRONMENT = "sandbox"
+  NETWORK = "sandbox"
+  TESTNET_MODE = "true"
+  SANDBOX_ENABLED = "true"
+}
+
 [[kv_namespaces]]
 binding = "RECEIPTS"
 id = "c3e35cc18bdc4c75bfafbfca1796c71f"
 [[kv_namespaces]]
 binding = "WALLETS"
 id = "f21218d1bc3a46bc8ffcc58d752b5ebf"
+[[kv_namespaces]]
+binding = "MEMPOOL"
+id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 [vars]
 TELEGRAM_SECRET = ""
+
+[build]
+command = "npm run build"
+watch_dir = "src"
+
+[profile.dev]
+fastly = false
