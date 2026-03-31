@@ -1,5 +1,5 @@
-const { createLogger } = require('./errorHandler');
-const mempool = require('./mempool');
+import { createLogger } from '../errorHandler.js';
+import mempool from './mempool.js';
 
 const logger = createLogger('sandbox');
 
@@ -307,4 +307,4 @@ class Sandbox {
   }
 }
 
-module.exports = new Sandbox();
+export default new Sandbox();

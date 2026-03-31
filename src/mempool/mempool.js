@@ -1,4 +1,4 @@
-const { createLogger } = require('./errorHandler');
+import { createLogger } from '../errorHandler.js';
 
 const logger = createLogger('mempool');
 
@@ -272,4 +272,4 @@ class Mempool {
   }
 }
 
-module.exports = new Mempool();
+export default new Mempool();
