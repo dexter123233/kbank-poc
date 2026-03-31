@@ -1,6 +1,17 @@
 # K-Bank PoC
 
+[![Telegram Bot](https://img.shields.io/badge/Telegram-K--Bank%20Bot-2CA5E0?style=flat&logo=telegram)](https://t.me/kbank_testnet_bot)
+
 Consumer DeFi funding platform built on Flow blockchain with DAO governance, crypto insurance, and subscription management for content creators.
+
+## Try It Now
+
+Test the K-Bank Telegram bot: [@kbank_testnet_bot](https://t.me/kbank_testnet_bot)
+
+### Testnet Demo
+- Get 100 FLOW test tokens instantly
+- Send tokens between users
+- Try all commands below
 
 ## About
 
@@ -60,6 +71,11 @@ K-Bank is a comprehensive DeFi platform that combines blockchain-based banking f
 ```
 
 ## Telegram Bot Commands
+
+### Testnet Commands
+- `/faucet` - Get 100 FLOW test tokens
+- `/send <address> <amount>` - Send tokens to another user
+- `/pool` - View all testnet balances
 
 ### Wallet Commands
 - `/start` - Open the wallet dashboard

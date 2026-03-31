@@ -2,6 +2,7 @@
 const { Telegraf, Markup } = require('telegraf');
 const { createLogger } = require('./errorHandler');
 const flowClient = require('./flowClient');
+const testnetPool = require('./testnetPool');
 const rateLimiter = require('./rateLimiter/rateLimiter');
 const { addToQueue, getQueueStatus, getJobStatus } = require('./scheduler/scheduler');
 const receiptTracker = require('./receiptTracker/receiptTracker');
@@ -147,6 +148,7 @@ class KBankBot {
     this.userThemes = new Map();
     this.userSubscriptions = new Map();
     this.currentTheme = 'modern';
+    testnetPool.initialize();
   }
 
   getCurrentTheme() {
@@ -746,6 +748,62 @@ class KBankBot {
       this.userWallets.set(userId, address);
       
       ctx.reply(`✅ Wallet address set to:\n\`${address}\``, { parse_mode: 'Markdown' });
+    });
+
+    this.bot.command('faucet', (ctx) => {
+      const userId = ctx.from.id.toString();
+      const wallet = this.userWallets.get(userId);
+      
+      if (!wallet) {
+        return ctx.reply('Please set your wallet address first:\n/setwallet <address>');
+      }
+      
+      const balance = testnetPool.faucet(wallet);
+      ctx.reply(`💰 Faucet: You received 100 FLOW test tokens!\n\nYour balance: ${balance} FLOW`);
+    });
+
+    this.bot.command('send', (ctx) => {
+      const args = ctx.message.text.split(' ').slice(1);
+      const recipient = args[0];
+      const amount = parseFloat(args[1]);
+      
+      if (!recipient || !recipient.startsWith('0x') || isNaN(amount) || amount <= 0) {
+        return ctx.reply('❌ Usage: /send <recipient_address> <amount>\n\nExample: /send 0x179b6b1cb6755e31 10');
+      }
+      
+      const userId = ctx.from.id.toString();
+      const sender = this.userWallets.get(userId);
+      
+      if (!sender) {
+        return ctx.reply('Please set your wallet first:\n/setwallet <address>');
+      }
+      
+      try {
+        const tx = testnetPool.transfer(sender, recipient, amount);
+        ctx.reply(
+          `✅ Transfer Successful!\n\n` +
+          `📤 From: \`${tx.fromAlias}\`\n` +
+          `📥 To: \`${tx.toAlias}\`\n` +
+          `💰 Amount: ${amount} FLOW\n` +
+          `🔗 TX ID: ${tx.id}`,
+          { parse_mode: 'Markdown' }
+        );
+      } catch (err) {
+        ctx.reply(`❌ Transfer failed: ${err.message}`);
+      }
+    });
+
+    this.bot.command('pool', (ctx) => {
+      const balances = testnetPool.getAllBalances();
+      let msg = '💰 *Testnet Pool Balances:*\n\n';
+      
+      for (const [alias, data] of Object.entries(balances)) {
+        msg += `• ${alias}: ${data.balance} FLOW\n`;
+      }
+      
+      msg += '\n💡 Use /faucet to get 100 FLOW\n📤 Use /send <address> <amount> to transfer';
+      
+      ctx.reply(msg, { parse_mode: 'Markdown' });
     });
 
     this.bot.command('proposal', (ctx) => {

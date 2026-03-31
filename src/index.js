@@ -2,24 +2,29 @@
 require('dotenv').config();
 
 const logger = require('./errorHandler').createLogger('main');
-const bot = require('./bot');
+const { KBankBot } = require('./bot');
 const insuranceBridge = require('./insurance/insuranceBridge');
 const receiptTracker = require('./receiptTracker/receiptTracker');
 const { processQueue } = require('./scheduler/scheduler');
 const rateLimiter = require('./rateLimiter/rateLimiter');
+const testnetPool = require('./testnetPool');
 
 // Initialize services
 let insuranceServer;
+let bot;
 
 async function initializeServices() {
   try {
     logger.info('Starting K-Bank PoC services...');
 
     // Initialize and start Telegram bot
+    bot = new KBankBot();
     const botStarted = await bot.initialize();
     if (botStarted) {
       logger.info('Telegram bot launched');
     }
+
+    logger.info('Testnet pool initialized with 100 FLOW per account');
 
     // Start insurance bridge server
     await insuranceBridge.start();
