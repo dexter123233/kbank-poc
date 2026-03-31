@@ -77,6 +77,10 @@ const PANTONE_THEMES = {
   }
 };
 
+const WEBSITE_URL = process.env.WEBSITE_URL || 'https://kbank-poc.pages.dev';
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'support@kbank.defi';
+const DOCS_URL = process.env.DOCS_URL || 'https://docs.kbank.defi';
+
 const SUBSCRIPTION_PLATFORMS = {
   meta: {
     name: 'Meta (Facebook/Instagram)',
@@ -164,7 +168,18 @@ class KBankBot {
       [Markup.button.callback('📊 Dashboard', 'dashboard_menu')],
       [Markup.button.callback('📱 Subscriptions', 'subscriptions_menu')],
       [Markup.button.callback('🎨 Theme', 'theme_menu')],
+      [Markup.button.callback('🌐 Website', 'website_menu')],
       [Markup.button.callback('❓ Help', 'help_menu')]
+    ]);
+  }
+
+  createSupportKeyboard() {
+    return Markup.inlineKeyboard([
+      [Markup.button.url('🌐 Visit Website', WEBSITE_URL)],
+      [Markup.button.url('📖 Documentation', DOCS_URL)],
+      [Markup.button.url('💬 Support Chat', 'https://t.me/kbank_defi')],
+      [Markup.button.callback('📧 Email Support', 'email_support_menu')],
+      [Markup.button.callback('🔙 Back', 'back_to_menu')]
     ]);
   }
 
@@ -375,8 +390,54 @@ class KBankBot {
         '/withdraw <amount> - Withdraw\n' +
         '/stake <amount> - Stake tokens\n' +
         '/connect <platform> - Connect subscription\n' +
-        '/theme <name> - Change theme',
+        '/theme <name> - Change theme\n\n' +
+        `🌐 ${WEBSITE_URL}`,
         { parse_mode: 'Markdown' }
+      );
+    });
+
+    this.bot.action('website_menu', async (ctx) => {
+      await ctx.answerCbQuery();
+      ctx.editMessageText(
+        `🌐 *K-Bank Resources*\n\n` +
+        `*Website:* ${WEBSITE_URL}\n` +
+        `*Documentation:* ${DOCS_URL}\n` +
+        `*Support:* ${SUPPORT_EMAIL}\n\n` +
+        `Choose an option:`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: this.createSupportKeyboard()
+        }
+      );
+    });
+
+    this.bot.action('email_support_menu', async (ctx) => {
+      await ctx.answerCbQuery();
+      ctx.editMessageText(
+        `📧 *Support*\n\n` +
+        `Email: ${SUPPORT_EMAIL}\n\n` +
+        `For urgent issues, please include:\n` +
+        `• Your wallet address\n` +
+        `• Transaction ID (if applicable)\n` +
+        `• Description of the issue\n\n` +
+        `We typically respond within 24 hours.`,
+        { parse_mode: 'Markdown' }
+      );
+    });
+
+    this.bot.action('back_to_menu', async (ctx) => {
+      await ctx.answerCbQuery();
+      const theme = this.getTheme();
+      ctx.editMessageText(
+        `🏦 *K-Bank*\n\n` +
+        `Your Consumer DeFi funding platform on Flow blockchain\n\n` +
+        `🌐 ${WEBSITE_URL}\n` +
+        `Current Theme: *${theme.name}*\n\n` +
+        `Tap a button to get started:`,
+        { 
+          parse_mode: 'Markdown',
+          ...this.createWalletKeyboard()
+        }
       );
     });
   }
@@ -401,6 +462,7 @@ class KBankBot {
       ctx.reply(
         `🏦 *K-Bank*\n\n` +
         `Your Consumer DeFi funding platform on Flow blockchain\n\n` +
+        `🌐 ${WEBSITE_URL}\n` +
         `Current Theme: *${theme.name}*\n\n` +
         `Tap a button to get started:`,
         { 
@@ -432,7 +494,11 @@ class KBankBot {
         '/insurance status <claimId> - Check status\n\n' +
         '📊 *Info*\n' +
         '/status - System status\n' +
-        '/receipts - Transaction receipts',
+        '/receipts - Transaction receipts\n\n' +
+        '🌐 *Support*\n' +
+        `/website - Visit our website\n` +
+        `/support - Get help\n\n` +
+        `🌐 ${WEBSITE_URL}`,
         { parse_mode: 'Markdown' }
       );
     });
@@ -848,6 +914,32 @@ class KBankBot {
       } else {
         ctx.reply('❌ Receipt not found');
       }
+    });
+
+    this.bot.command('website', (ctx) => {
+      ctx.reply(
+        `🌐 *K-Bank Website*\n\n` +
+        `Visit us at: ${WEBSITE_URL}\n\n` +
+        `Documentation: ${DOCS_URL}`,
+        { 
+          parse_mode: 'Markdown',
+          reply_markup: this.createSupportKeyboard()
+        }
+      );
+    });
+
+    this.bot.command('support', (ctx) => {
+      ctx.reply(
+        `❓ *K-Bank Support*\n\n` +
+        `*Website:* ${WEBSITE_URL}\n` +
+        `*Email:* ${SUPPORT_EMAIL}\n` +
+        `*Telegram:* @kbank_defi\n\n` +
+        `Choose a support option:`,
+        { 
+          parse_mode: 'Markdown',
+          reply_markup: this.createSupportKeyboard()
+        }
+      );
     });
 
     this.bot.on('text', (ctx) => {
