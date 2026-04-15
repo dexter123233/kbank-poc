@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>K-Bank PoC</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; }
+    .glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+    .pulse { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .hero-gradient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+  </style>
+</head>
+<body class="text-white">
+  <!-- Hero Section -->
+  <div class="hero-gradient py-20 px-6 text-center">
+    <div class="max-w-4xl mx-auto">
+      <i class="fas fa-university text-6xl mb-6 opacity-90"></i>
+      <h1 class="text-5xl font-bold mb-4">K-Bank PoC</h1>
+      <p class="text-xl opacity-80 mb-2">Consumer DeFi Funding Platform</p>
+      <p class="text-sm opacity-60 mb-8">Built on Flow Blockchain · DAO Governance · Crypto Insurance · Subscription Management</p>
+      <div class="flex flex-wrap justify-center gap-4">
+        <a href="./admin.html" class="bg-white text-purple-700 font-bold px-8 py-3 rounded-xl hover:bg-gray-100 transition">
+          <i class="fas fa-tachometer-alt mr-2"></i>Admin Dashboard
+        </a>
+        <a href="https://t.me/kbank_testnet_bot" target="_blank" class="glass px-8 py-3 rounded-xl hover:bg-white/10 transition">
+          <i class="fab fa-telegram mr-2"></i>Try Telegram Bot
+        </a>
+        <a href="https://github.com/dexter123233/kbank-poc" target="_blank" class="glass px-8 py-3 rounded-xl hover:bg-white/10 transition">
+          <i class="fab fa-github mr-2"></i>View Source
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="max-w-5xl mx-auto px-6 -mt-10">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="glass rounded-xl p-5 text-center card-hover">
+        <p class="text-3xl font-bold text-blue-400">8</p>
+        <p class="text-gray-400 text-sm mt-1">Platforms Supported</p>
+      </div>
+      <div class="glass rounded-xl p-5 text-center card-hover">
+        <p class="text-3xl font-bold text-green-400">100K</p>
+        <p class="text-gray-400 text-sm mt-1">Free Req/Day</p>
+      </div>
+      <div class="glass rounded-xl p-5 text-center card-hover">
+        <p class="text-3xl font-bold text-purple-400">6</p>
+        <p class="text-gray-400 text-sm mt-1">Dynamic Themes</p>
+      </div>
+      <div class="glass rounded-xl p-5 text-center card-hover">
+        <p class="text-3xl font-bold text-yellow-400">DAO</p>
+        <p class="text-gray-400 text-sm mt-1">On-Chain Governance</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="max-w-5xl mx-auto px-6 py-16">
+    <h2 class="text-3xl font-bold text-center mb-12">Key Features</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="glass rounded-xl p-6 card-hover">
+        <i class="fas fa-wallet text-blue-400 text-2xl mb-4"></i>
+        <h3 class="font-bold text-lg mb-2">Telegram Wallet UI</h3>
+        <p class="text-gray-400 text-sm">Modern inline keyboard navigation inspired by Telegram Wallet with dynamic seasonal theming.</p>
+      </div>
+      <div class="glass rounded-xl p-6 card-hover">
+        <i class="fas fa-layer-group text-green-400 text-2xl mb-4"></i>
+        <h3 class="font-bold text-lg mb-2">Subscription Collection</h3>
+        <p class="text-gray-400 text-sm">Plug-and-play integration with Meta, Google Play, YouTube, Patreon, Stripe, Gumroad & more.</p>
+      </div>
+      <div class="glass rounded-xl p-6 card-hover">
+        <i class="fas fa-vote-yea text-purple-400 text-2xl mb-4"></i>
+        <h3 class="font-bold text-lg mb-2">DAO Governance</h3>
+        <p class="text-gray-400 text-sm">On-chain voting for project approvals built on Flow blockchain with Cadence smart contracts.</p>
+      </div>
+      <div class="glass rounded-xl p-6 card-hover">
+        <i class="fas fa-shield-alt text-yellow-400 text-2xl mb-4"></i>
+        <h3 class="font-bold text-lg mb-2">Crypto Insurance</h3>
+        <p class="text-gray-400 text-sm">Integrated insurance protection with automated claim processing and premium calculation.</p>
+      </div>
+      <div class="glass rounded-xl p-6 card-hover">
+        <i class="fas fa-receipt text-red-400 text-2xl mb-4"></i>
+        <h3 class="font-bold text-lg mb-2">Transaction Transparency</h3>
+        <p class="text-gray-400 text-sm">Full audit trail with receipt tracking, persistent storage, and auto-save every 5 minutes.</p>
+      </div>
+      <div class="glass rounded-xl p-6 card-hover">
+        <i class="fas fa-cloud text-cyan-400 text-2xl mb-4"></i>
+        <h3 class="font-bold text-lg mb-2">Serverless Deploy</h3>
+        <p class="text-gray-400 text-sm">Deploy on Cloudflare Workers for 100K free requests/day or Docker/Kubernetes for scale.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Start -->
+  <div class="max-w-3xl mx-auto px-6 pb-16">
+    <div class="glass rounded-2xl p-8">
+      <h2 class="text-2xl font-bold mb-6 text-center"><i class="fas fa-rocket text-yellow-400 mr-2"></i>Quick Start</h2>
+      <div class="space-y-4">
+        <div class="bg-black/30 rounded-lg p-4 font-mono text-sm">
+          <p class="text-gray-400"># 1. Connect your Flow wallet</p>
+          <p class="text-green-400">/setwallet 0xYourFlowAddress</p>
+        </div>
+        <div class="bg-black/30 rounded-lg p-4 font-mono text-sm">
+          <p class="text-gray-400"># 2. Get testnet tokens</p>
+          <p class="text-green-400">/faucet</p>
+        </div>
+        <div class="bg-black/30 rounded-lg p-4 font-mono text-sm">
+          <p class="text-gray-400"># 3. Connect a subscription platform</p>
+          <p class="text-green-400">/connect stripe pk_live_xxx sk_live_xxx prod_xxx</p>
+        </div>
+        <div class="bg-black/30 rounded-lg p-4 font-mono text-sm">
+          <p class="text-gray-400"># 4. Check your revenue</p>
+          <p class="text-green-400">/revenue</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="text-center py-8 text-gray-500 text-sm border-t border-white/10">
+    <p>Built with ❤️ for the creator economy · <a href="https://github.com/dexter123233/kbank-poc" class="text-blue-400 hover:underline">GitHub</a> · <a href="./admin.html" class="text-blue-400 hover:underline">Admin Panel</a></p>
+  </div>
+</body>
+</html>
